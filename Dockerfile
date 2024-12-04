@@ -2,15 +2,19 @@ FROM node:22-alpine
 
 WORKDIR /usr/src/app
 
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 
-RUN npm install -g pnpm && pnpm install
+RUN npm install
 
 COPY . .
 
-RUN npx prisma migrate deploy
-RUN npx prisma db seed
+COPY wait-for-db.sh /usr/src/app/wait-for-db.sh
+RUN chmod +x /usr/src/app/wait-for-db.sh
+# Gere o cliente Prisma
+RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["./wait-for-db.sh", "postgres", "5432", "postgres", "npx", "prisma", "migrate", "deploy", "&&", "npm", "run", "start:dev"]
+CMD ["npm", "run", "start:dev"]

@@ -1,7 +1,16 @@
 #!/bin/bash
-# Espera até que o banco de dados PostgreSQL esteja aceitando conexões
-until pg_isready -h postgres -p 5432; do
-  echo "Esperando o banco de dados ficar disponível..."
-  sleep 2
+# wait-for-db.sh
+
+set -e
+
+host="$1"
+shift
+cmd="$@"
+
+until pg_isready -h "$host" -p 5432 > /dev/null 2>&1; do
+  echo "Waiting for database..."
+  sleep 1
 done
-echo "Banco de dados pronto!"
+
+>&2 echo "Database is up - executing command"
+exec $cmd
